@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Phishing Detector</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h3>🛡️ Phishing Detector</h3>
+    <input type="text" id="urlInput" placeholder="Enter or fetch URL..." />
+    <button id="scanBtn">Scan URL</button>
+
+    <div id="result" class="result-box hidden">
+      <div id="statusBadge" class="badge"></div>
+      <p><strong>Confidence:</strong> <span id="confidence"></span></p>
+      <p><strong>Latency:</strong> <span id="latency"></span></p>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
