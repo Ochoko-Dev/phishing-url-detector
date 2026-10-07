@@ -1,0 +1,27 @@
+url,label,source,date_added,notes
+url,label,source,date_added,note
+https://equitygroupholdings.com/ke/,0,official_portal,2026-10-07,Legitimate Equity main portal
+https://equityonline.equitygroupholdings.com/,0,official_portal,2026-10-07,Legitimate Equity Online Banking
+https://kcbgroup.com/,0,official_portal,2026-10-07,Legitimate KCB Bank portal
+https://co-opbank.co.ke/,0,official_portal,2026-10-07,Legitimate Co-op Bank portal
+https://i-bank.co-opbank.co.ke/,0,official_portal,2026-10-07,Legitimate Co-op Internet Banking
+https://www.absabank.co.ke/,0,official_portal,2026-10-07,Legitimate Absa Bank Kenya
+https://www.ncbagroup.com/,0,official_portal,2026-10-07,Legitimate NCBA Bank
+https://www.familybank.co.ke/,0,official_portal,2026-10-07,Legitimate Family Bank
+https://www.stanbicbank.co.ke/,0,official_portal,2026-10-07,Legitimate Stanbic Bank
+https://www.dtbk.dtbafrica.com/,0,official_portal,2026-10-07,Legitimate DTB Kenya
+https://www.safaricom.co.ke/,0,official_portal,2026-10-07,Legitimate Safaricom portal
+http://equity-online-verify-ke.com/login,1,synthetic_typosquatting,2026-10-07,Typosquatting Equity lure
+http://equitybank.co.ke.portal-login.xyz/login.php,1,synthetic_subdomain,2026-10-07,Subdomain masking lure
+http://kcb-vooma-update-portal.org/verify,1,synthetic_typosquatting,2026-10-07,KCB Vooma impersonation
+http://kcbbank.co.ke.secure-account-validation.info,1,synthetic_subdomain,2026-10-07,KCB subdomain spoof
+http://coopbank-app-upgrade.co.ke.net/auth,1,synthetic_typosquatting,2026-10-07,Co-op Bank app lure
+http://i-bank.co-opbank.co.ke.account-update.top,1,synthetic_subdomain,2026-10-07,Co-op i-Bank spoof
+http://absa-online-token-verify.com/login,1,synthetic_typosquatting,2026-10-07,Absa token spoof
+http://ncba-loop-account-unblock.info,1,synthetic_typosquatting,2026-10-07,NCBA Loop scam lure
+http://familybank-pesa-pap-update.xyz,1,synthetic_typosquatting,2026-10-07,Family Bank PesaPap lure
+http://mpesa-reverse-transaction-portal.com,1,synthetic_typosquatting,2026-10-07,M-Pesa reversal scam lure
+https://bit.ly/equity-loan-limit-2026,1,shortened_redirect,2026-10-07,Shortened link targeting Equity
+https://tinyurl.com/kcb-fuliza-increase,1,shortened_redirect,2026-10-07,Shortened link targeting KCB
+http://192.168.1.105/equity/login.html,1,ip_based_lure,2026-10-07,Raw IP phishing targeting Equity
+http://10.0.0.12/coop/index.php,1,ip_based_lure,2026-10-07,Raw IP phishing targeting Co-op
