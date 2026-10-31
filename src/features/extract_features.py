@@ -50,7 +50,7 @@ class FeatureExtractor:
         "equitygroupholdings.com", "equityonline.equitygroupholdings.com",
         "kcbgroup.com", "co-opbank.co.ke", "i-bank.co-opbank.co.ke",
         "absabank.co.ke", "ncbagroup.com", "familybank.co.ke",
-        "stanbicbank.co.ke", "dtbafrica.com", "safaricom.co.ke"
+        "stanbicbank.co.ke", "dtbafrica.com", "dtbk.dtbafrica.com", "safaricom.co.ke"
     }
 
     @staticmethod
@@ -88,9 +88,11 @@ class FeatureExtractor:
     @classmethod
     def brand_domain_mismatch(cls, domain):
         """1 if a brand name is present but the domain is NOT the known
-        official domain for that brand — the strongest single
+        official domain for that brand -- the strongest single
         impersonation signal: 'mentions a bank, isn't the bank'."""
         domain_clean = domain.lower().split(':')[0]
+        if domain_clean.startswith('www.'):
+            domain_clean = domain_clean[4:]
         if not cls.brand_in_domain(domain_clean):
             return 0
         return 0 if domain_clean in cls.OFFICIAL_DOMAINS else 1

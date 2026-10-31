@@ -4,5 +4,4 @@ __pycache__/
 .DS_Store
 data/raw/*.csv
 data/processed/*.csv
-models/*.pkl
 data/raw/*.txt

@@ -31,7 +31,16 @@ try:
 except Exception:
     st.sidebar.error("FastAPI Backend: OFFLINE")
 
-st.sidebar.info("Framework Architecture:\n- Backend: FastAPI\n- ML Models: XGBoost / Random Forest\n- Latency Target: < 2.0s")
+st.sidebar.info(
+    "Framework Architecture:\n"
+    "- Backend: FastAPI\n"
+    "- ML Models: Random Forest / Logistic Regression\n"
+    "- Latency Target: < 2.0s\n\n"
+    "Both models are served and shown side by side -- they were found to "
+    "generalize differently on Kenyan banking URLs during evaluation "
+    "(see Discussion chapter), so a single 'primary' model would hide "
+    "that tradeoff."
+)
 
 # Main Interface
 target_url = st.text_input("Enter URL to scan:", placeholder="e.g. http://equity-online-verify-ke.com/login")
@@ -42,50 +51,60 @@ if st.button("Scan URL", type="primary"):
     else:
         with st.spinner("Analyzing URL structure and running inference..."):
             try:
-                # 1. Query FastAPI Backend
                 response = requests.post(
                     API_URL,
                     json={"url": target_url.strip()},
                     headers={"Content-Type": "application/json"},
                     timeout=5
                 )
-                
+
                 if response.status_code == 200:
                     data = response.json()
-                    
-                    is_phishing = data["is_phishing"]
-                    confidence = data["confidence_score"] * 100
+
+                    rf = data["models"]["random_forest"]
+                    lr = data["models"]["logistic_regression"]
                     latency = data["latency_ms"]
-                    model_used = data["model_used"]
+                    agreement = data["agreement"]
 
                     st.markdown("---")
-                    
-                    # Top Metrics Banner
+
+                    if not agreement:
+                        st.warning("⚠️ The two models disagree on this URL -- treat the result with extra caution.")
+
                     col1, col2, col3 = st.columns(3)
-                    
+
                     with col1:
-                        if is_phishing:
-                            st.error("🚨 RESULT: PHISHING DETECTED")
+                        st.subheader("🌲 Random Forest")
+                        if rf["is_phishing"]:
+                            st.error("🚨 PHISHING DETECTED")
                         else:
-                            st.success("✅ RESULT: SAFE URL")
-                            
+                            st.success("✅ SAFE URL")
+                        st.metric("Confidence", f"{rf['confidence_score']*100:.2f}%")
+
                     with col2:
-                        st.metric("Confidence Level", f"{confidence:.2f}%")
-                        
+                        st.subheader("📈 Logistic Regression")
+                        if lr["is_phishing"]:
+                            st.error("🚨 PHISHING DETECTED")
+                        else:
+                            st.success("✅ SAFE URL")
+                        st.metric("Confidence", f"{lr['confidence_score']*100:.2f}%")
+
                     with col3:
-                        st.metric("Inference Latency", f"{latency:.2f} ms", delta_color="inverse")
+                        st.subheader("⏱️ Performance")
+                        st.metric("Total Inference Latency", f"{latency:.2f} ms")
+                        st.metric("Model Agreement", "Yes" if agreement else "No")
 
                     # Feature Breakdown Table
-                    st.subheader("📊 Extracted Lexical & Structural Features")
-                    extracted_features = FeatureExtractor.extract(target_url.strip())
-                    
-                    feat_df = pd.DataFrame([extracted_features]).T.reset_index()
-                    feat_df.columns = ["Feature Metric", "Extracted Value"]
-                    
+                    st.subheader("🔎 Extracted Lexical & Structural Features")
+                    raw_features = data["raw_features"]
+                    feat_df = pd.DataFrame(list(raw_features.items()), columns=["Feature", "Extracted Value"])
+                    feat_df["Used by models?"] = feat_df["Feature"].apply(
+                        lambda f: "No (excluded -- dataset bias, see Discussion ch.)" if f in ("path_length", "count_slash") else "Yes"
+                    )
                     st.dataframe(feat_df, use_container_width=True)
-                    
+
                 else:
                     st.error(f"API Error {response.status_code}: {response.text}")
-                    
+
             except requests.exceptions.ConnectionError:
-                st.error("Could not connect to FastAPI backend. Ensure `uvicorn src.api.app:app` is running on port 8000.")
+                st.error("Could not connect to FastAPI backend. Ensure `uvicorn src.api.app:app --host 127.0.0.1 --port 8000` is running.")

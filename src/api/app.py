@@ -1,105 +1,75 @@
 import os
+import json
 import time
+import sys
+
 import joblib
 import pandas as pd
-import numpy as np
-import xgboost as xgb
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
-# Import your existing feature extraction module
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 from src.features.extract_features import FeatureExtractor
 
-# Path Setup
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-RF_PATH = os.path.join(BASE_DIR, "models", "random_forest.pkl")
-XGB_PATH = os.path.join(BASE_DIR, "models", "xgboost_model.json")
+MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "models")
 
-# Initialize FastAPI App
-app = FastAPI(
-    title="Phishing URL Detection API",
-    description="Real-time lexical and structural feature classification endpoint.",
-    version="1.0.0"
-)
+app = FastAPI(title="Phishing URL Detection API")
 
-# Global variables for models
-rf_model = None
-xgb_model = None
+# Loaded once at startup
+rf_model = joblib.load(os.path.join(MODEL_DIR, "random_forest.pkl"))
+lr_model = joblib.load(os.path.join(MODEL_DIR, "logistic_regression.pkl"))
+scaler = joblib.load(os.path.join(MODEL_DIR, "scaler.pkl"))
 
-@app.on_event("startup")
-def load_models():
-    global rf_model, xgb_model
-    print("[*] Loading trained machine learning models...")
-    
-    if os.path.exists(RF_PATH):
-        rf_model = joblib.load(RF_PATH)
-        print("    [+] Loaded Random Forest model.")
-    else:
-        print(f"    [-] Warning: Random Forest model not found at {RF_PATH}")
-        
-    if os.path.exists(XGB_PATH):
-        xgb_model = xgb.XGBClassifier()
-        xgb_model.load_model(XGB_PATH)
-        print("    [+] Loaded XGBoost model.")
-    else:
-        print(f"    [-] Warning: XGBoost model not found at {XGB_PATH}")
+with open(os.path.join(MODEL_DIR, "feature_cols.json")) as f:
+    FEATURE_COLS = json.load(f)
+
 
 class URLRequest(BaseModel):
     url: str
 
-class DetectionResponse(BaseModel):
-    url: str
-    prediction: str
-    is_phishing: bool
-    confidence_score: float
-    latency_ms: float
-    model_used: str
 
 @app.get("/")
-def root():
-    return {
-        "status": "online",
-        "service": "Phishing URL Detection Engine",
-        "models_loaded": {
-            "random_forest": rf_model is not None,
-            "xgboost": xgb_model is not None
-        }
-    }
+def health_check():
+    return {"status": "ok", "models_loaded": ["random_forest", "logistic_regression"]}
 
-@app.post("/predict", response_model=DetectionResponse)
-def predict_url(payload: URLRequest):
-    if not xgb_model and not rf_model:
-        raise HTTPException(status_code=500, detail="Machine learning models are not loaded.")
 
-    url = payload.url.strip()
+@app.post("/predict")
+def predict(request: URLRequest):
+    url = request.url.strip()
     if not url:
-        raise HTTPException(status_code=400, detail="URL cannot be empty.")
+        raise HTTPException(status_code=400, detail="URL must not be empty.")
 
     start_time = time.time()
 
-    # 1. Dynamically extract features from raw URL input
-    features_dict = FeatureExtractor.extract(url)
-    
-    # 2. Format features as Pandas DataFrame matching model input format
-    input_df = pd.DataFrame([features_dict])
+    raw_features = FeatureExtractor.extract_features(url)
+    # Only the exact feature set and order the models were trained on.
+    # path_length and count_slash are deliberately excluded (see train.py) --
+    # they were found to be a dataset-construction artifact, not a genuine
+    # phishing signal.
+    row = pd.DataFrame([{col: raw_features[col] for col in FEATURE_COLS}])
 
-    # 3. Perform Inference using preferred model (XGBoost)
-    if xgb_model:
-        prob = float(xgb_model.predict_proba(input_df)[0][1])
-        model_name = "XGBoost"
-    else:
-        prob = float(rf_model.predict_proba(input_df)[0][1])
-        model_name = "Random Forest"
+    rf_proba = rf_model.predict_proba(row)[0][1]
+    rf_is_phishing = bool(rf_proba >= 0.5)
 
-    is_phishing = prob >= 0.5
-    prediction = "Phishing" if is_phishing else "Safe"
-    latency = (time.time() - start_time) * 1000  # convert to ms
+    row_scaled = scaler.transform(row)
+    lr_proba = lr_model.predict_proba(row_scaled)[0][1]
+    lr_is_phishing = bool(lr_proba >= 0.5)
+
+    latency_ms = (time.time() - start_time) * 1000
 
     return {
         "url": url,
-        "prediction": prediction,
-        "is_phishing": is_phishing,
-        "confidence_score": round(prob if is_phishing else 1.0 - prob, 4),
-        "latency_ms": round(latency, 2),
-        "model_used": model_name
+        "latency_ms": round(latency_ms, 4),
+        "models": {
+            "random_forest": {
+                "is_phishing": rf_is_phishing,
+                "confidence_score": round(float(rf_proba if rf_is_phishing else 1 - rf_proba), 4),
+            },
+            "logistic_regression": {
+                "is_phishing": lr_is_phishing,
+                "confidence_score": round(float(lr_proba if lr_is_phishing else 1 - lr_proba), 4),
+            },
+        },
+        "agreement": rf_is_phishing == lr_is_phishing,
+        "raw_features": raw_features,
     }

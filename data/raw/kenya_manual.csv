@@ -1,5 +1,4 @@
 url,label,source,date_added,notes
-url,label,source,date_added,note
 https://equitygroupholdings.com/ke/,0,official_portal,2026-10-07,Legitimate Equity main portal
 https://equityonline.equitygroupholdings.com/,0,official_portal,2026-10-07,Legitimate Equity Online Banking
 https://kcbgroup.com/,0,official_portal,2026-10-07,Legitimate KCB Bank portal
@@ -21,7 +20,7 @@ http://absa-online-token-verify.com/login,1,synthetic_typosquatting,2026-10-07,A
 http://ncba-loop-account-unblock.info,1,synthetic_typosquatting,2026-10-07,NCBA Loop scam lure
 http://familybank-pesa-pap-update.xyz,1,synthetic_typosquatting,2026-10-07,Family Bank PesaPap lure
 http://mpesa-reverse-transaction-portal.com,1,synthetic_typosquatting,2026-10-07,M-Pesa reversal scam lure
-https://bit.ly/equity-loan-limit-2026,1,shortened_redirect,2026-10-07,Shortened link targeting Equity
-https://tinyurl.com/kcb-fuliza-increase,1,shortened_redirect,2026-10-07,Shortened link targeting KCB
-http://192.168.1.105/equity/login.html,1,ip_based_lure,2026-10-07,Raw IP phishing targeting Equity
-http://10.0.0.12/coop/index.php,1,ip_based_lure,2026-10-07,Raw IP phishing targeting Co-op
+https://bit.ly/equity-loan-limit-2026,1,synthetic_shortened_redirect,2026-10-07,Shortened link targeting Equity; brand appears in path not domain
+https://tinyurl.com/kcb-fuliza-increase,1,synthetic_shortened_redirect,2026-10-07,Shortened link targeting KCB; brand appears in path not domain
+http://185.220.101.47/equity/login.html,1,synthetic_ip_based_lure,2026-10-07,Public-range IP phishing lure targeting Equity; illustrative pattern only; not a live address
+http://45.137.22.198/coop/index.php,1,synthetic_ip_based_lure,2026-10-07,Public-range IP phishing lure targeting Co-op; illustrative pattern only; not a live address
