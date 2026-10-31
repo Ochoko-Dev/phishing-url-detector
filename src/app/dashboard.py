@@ -15,15 +15,16 @@ st.set_page_config(
     layout="wide"
 )
 
-API_URL = "http://127.0.0.1:8000/predict"
-
+import os as _os
+BACKEND_BASE_URL = _os.environ.get("BACKEND_URL", st.secrets.get("BACKEND_URL", "http://127.0.0.1:8000")) if hasattr(st, "secrets") else _os.environ.get("BACKEND_URL", "http://127.0.0.1:8000")
+API_URL = f"{BACKEND_BASE_URL}/predict"
 st.title("🛡️ Phishing URL Threat Detection Engine")
 st.markdown("Real-time lexical and structural URL analysis powered by Machine Learning.")
 
 # Sidebar Controls
 st.sidebar.header("Configuration & API Status")
 try:
-    health_check = requests.get("http://127.0.0.1:8000/", timeout=2)
+    health_check = requests.get(BACKEND_BASE_URL + "/", timeout=2)
     if health_check.status_code == 200:
         st.sidebar.success("FastAPI Backend: ONLINE")
     else:
